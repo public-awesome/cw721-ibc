@@ -1,7 +1,7 @@
 [workspace]
 members = ["packages/*", "contracts/*"]
 
-[profile.release.package.cw721-base]
+[profile.release.package.cw721-ibc]
 codegen-units = 1
 incremental = false
 

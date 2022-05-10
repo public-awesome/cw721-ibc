@@ -3,7 +3,7 @@ workflows:
   version: 2
   test:
     jobs:
-      - contract_cw721_base
+      - contract_cw721_ibc
       - package_cw721
       - lint
       - wasm-build
@@ -17,10 +17,10 @@ workflows:
               ignore: /.*/
 
 jobs:
-  contract_cw721_base:
+  contract_cw721_ibc:
     docker:
       - image: rust:1.58.1
-    working_directory: ~/project/contracts/cw721-base
+    working_directory: ~/project/contracts/cw721-ibc
     steps:
       - checkout:
           path: ~/project
@@ -29,7 +29,7 @@ jobs:
           command: rustc --version; cargo --version; rustup --version
       - restore_cache:
           keys:
-            - cargocache-cw721-base-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
+            - cargocache-cw721-ibc-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
       - run:
           name: Unit Tests
           environment:
@@ -51,7 +51,7 @@ jobs:
           paths:
             - /usr/local/cargo/registry
             - target
-          key: cargocache-cw721-base-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
+          key: cargocache-cw721-ibc-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
 
 
   package_cw721:
