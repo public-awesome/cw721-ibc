@@ -1,14 +1,15 @@
 [package]
-name = "cw721-base"
+name = "cw721-ibc"
 version = "0.13.2"
 authors = [
   "Ethan Frey <ethanfrey@users.noreply.github.com>",
   "Orkun Külçe <orkun@deuslabs.fi>",
+  "Michael Scotto <m@publicawesome.com>",
 ]
 edition = "2018"
 description = "Basic implementation cw721 NFTs"
 license = "Apache-2.0"
-repository = "https://github.com/public-awesome/cw721-ibc"
+repository = "https://github.com/CosmWasm/cw-nfts"
 homepage = "https://cosmwasm.com"
 documentation = "https://docs.cosmwasm.com"
 
