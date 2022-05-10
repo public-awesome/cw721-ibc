@@ -7,11 +7,11 @@ authors = [
   "Michael Scotto <m@publicawesome.com>",
 ]
 edition = "2018"
-description = "Basic implementation cw721 NFTs"
+description = "IBC compatible version of CW721 base"
 license = "Apache-2.0"
-repository = "https://github.com/CosmWasm/cw-nfts"
-homepage = "https://cosmwasm.com"
-documentation = "https://docs.cosmwasm.com"
+repository = "https://github.com/public-awesome/cw721-ibc"
+homepage = "https://stargaze.zone"
+documentation = "https://docs.stargaze.zone"
 
 exclude = [
   # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
