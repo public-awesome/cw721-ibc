@@ -1,6 +1,6 @@
 use crate::{ExecuteMsg, QueryMsg};
 use cosmwasm_std::{to_binary, Addr, CosmosMsg, QuerierWrapper, StdResult, WasmMsg, WasmQuery};
-use cw721::{
+use cw721_ibc::{
     AllNftInfoResponse, Approval, ApprovalResponse, ApprovalsResponse, ContractInfoResponse,
     NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse,
 };
@@ -45,10 +45,12 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         token_id: T,
+        class_id: T, 
         include_expired: bool,
     ) -> StdResult<OwnerOfResponse> {
         let req = QueryMsg::OwnerOf {
             token_id: token_id.into(),
+            class_id: class_id.into(),
             include_expired: Some(include_expired),
         };
         self.query(querier, req)
@@ -58,11 +60,13 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         token_id: T,
+        class_id: T,
         spender: T,
         include_expired: Option<bool>,
     ) -> StdResult<ApprovalResponse> {
         let req = QueryMsg::Approval {
             token_id: token_id.into(),
+            class_id: class_id.into(),
             spender: spender.into(),
             include_expired,
         };
@@ -74,10 +78,12 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         token_id: T,
+        class_id: T,
         include_expired: Option<bool>,
     ) -> StdResult<ApprovalsResponse> {
         let req = QueryMsg::Approvals {
             token_id: token_id.into(),
+            class_id: class_id.into(),
             include_expired,
         };
         let res: ApprovalsResponse = self.query(querier, req)?;
@@ -119,9 +125,11 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         token_id: T,
+        class_id: T,
     ) -> StdResult<NftInfoResponse<U>> {
         let req = QueryMsg::NftInfo {
             token_id: token_id.into(),
+            class_id: class_id.into(),
         };
         self.query(querier, req)
     }
@@ -131,10 +139,12 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         token_id: T,
+        class_id: T,
         include_expired: bool,
     ) -> StdResult<AllNftInfoResponse<U>> {
         let req = QueryMsg::AllNftInfo {
             token_id: token_id.into(),
+            class_id: class_id.into(),
             include_expired: Some(include_expired),
         };
         self.query(querier, req)

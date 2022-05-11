@@ -2,7 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::Binary;
-use cw721::Expiration;
+use cw721_ibc::Expiration;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -24,12 +24,16 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg<T> {
     /// Transfer is a base message to move a token to another account without triggering actions
-    TransferNft { recipient: String, token_id: String },
+    TransferNft { 
+        recipient: String,
+        token_id: String,
+        class_id: String },
     /// Send is a base message to transfer a token to a contract and trigger an action
     /// on the receiving contract.
     SendNft {
         contract: String,
         token_id: String,
+        class_id: String,
         msg: Binary,
     },
     /// Allows operator to transfer / send the token from the owner's account.
@@ -37,10 +41,13 @@ pub enum ExecuteMsg<T> {
     Approve {
         spender: String,
         token_id: String,
+        class_id: String, 
         expires: Option<Expiration>,
     },
     /// Remove previously granted Approval
-    Revoke { spender: String, token_id: String },
+    Revoke { spender: String,
+         token_id: String,
+         class_id: String },
     /// Allows operator to transfer / send any token from the owner's account.
     /// If expiration is set, then this allowance has a time/height limit
     ApproveAll {
@@ -54,13 +61,16 @@ pub enum ExecuteMsg<T> {
     Mint(MintMsg<T>),
 
     /// Burn an NFT the sender has access to
-    Burn { token_id: String },
+    Burn { 
+        token_id: String,
+        class_id: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct MintMsg<T> {
     /// Unique ID of the NFT
     pub token_id: String,
+    pub class_id: String,
     /// The owner of the newly minter NFT
     pub owner: String,
     /// Universal resource identifier for this NFT
@@ -78,6 +88,7 @@ pub enum QueryMsg {
     /// Return type: OwnerOfResponse
     OwnerOf {
         token_id: String,
+        class_id: String, 
         /// unset or false will filter out expired approvals, you must set to true to see them
         include_expired: Option<bool>,
     },
@@ -86,6 +97,7 @@ pub enum QueryMsg {
     /// Return type: `ApprovalResponse`
     Approval {
         token_id: String,
+        class_id: String,
         spender: String,
         include_expired: Option<bool>,
     },
@@ -94,6 +106,7 @@ pub enum QueryMsg {
     /// Return type: `ApprovalsResponse`
     Approvals {
         token_id: String,
+        class_id: String,
         include_expired: Option<bool>,
     },
 
@@ -117,12 +130,14 @@ pub enum QueryMsg {
     /// but directly from the contract: `NftInfoResponse`
     NftInfo {
         token_id: String,
+        class_id: String
     },
     /// With MetaData Extension.
     /// Returns the result of both `NftInfo` and `OwnerOf` as one query as an optimization
     /// for clients: `AllNftInfo`
     AllNftInfo {
         token_id: String,
+        class_id: String,
         /// unset or false will filter out expired approvals, you must set to true to see them
         include_expired: Option<bool>,
     },

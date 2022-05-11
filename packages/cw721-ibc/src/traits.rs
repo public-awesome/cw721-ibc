@@ -36,6 +36,7 @@ where
         info: MessageInfo,
         recipient: String,
         token_id: String,
+        class_id: String, 
     ) -> Result<Response<C>, Self::Err>;
 
     fn send_nft(
@@ -45,6 +46,7 @@ where
         info: MessageInfo,
         contract: String,
         token_id: String,
+        class_id: String, 
         msg: Binary,
     ) -> Result<Response<C>, Self::Err>;
 
@@ -55,6 +57,7 @@ where
         info: MessageInfo,
         spender: String,
         token_id: String,
+        class_id: String, 
         expires: Option<Expiration>,
     ) -> Result<Response<C>, Self::Err>;
 
@@ -65,6 +68,7 @@ where
         info: MessageInfo,
         spender: String,
         token_id: String,
+        class_id: String, 
     ) -> Result<Response<C>, Self::Err>;
 
     fn approve_all(
@@ -90,6 +94,7 @@ where
         env: Env,
         info: MessageInfo,
         token_id: String,
+        class_id: String, 
     ) -> Result<Response<C>, Self::Err>;
 }
 
@@ -104,13 +109,14 @@ where
 
     fn num_tokens(&self, deps: Deps) -> StdResult<NumTokensResponse>;
 
-    fn nft_info(&self, deps: Deps, token_id: String) -> StdResult<NftInfoResponse<T>>;
+    fn nft_info(&self, deps: Deps, token_id: String, class_id: String) -> StdResult<NftInfoResponse<T>>;
 
     fn owner_of(
         &self,
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String, 
         include_expired: bool,
     ) -> StdResult<OwnerOfResponse>;
 
@@ -129,6 +135,7 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String,
         spender: String,
         include_expired: bool,
     ) -> StdResult<ApprovalResponse>;
@@ -138,6 +145,7 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String,
         include_expired: bool,
     ) -> StdResult<ApprovalsResponse>;
 
@@ -161,6 +169,7 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String, 
         include_expired: bool,
     ) -> StdResult<AllNftInfoResponse<T>>;
 }

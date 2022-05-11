@@ -20,7 +20,7 @@ jobs:
   contract_cw721_ibc:
     docker:
       - image: rust:1.58.1
-    working_directory: ~/project/contracts/cw721-ibc
+    working_directory: ~/project/contracts/cw721-base-ibc
     steps:
       - checkout:
           path: ~/project
@@ -29,7 +29,7 @@ jobs:
           command: rustc --version; cargo --version; rustup --version
       - restore_cache:
           keys:
-            - cargocache-cw721-ibc-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
+            - cargocache-cw721-base-ibc-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
       - run:
           name: Unit Tests
           environment:
@@ -51,13 +51,13 @@ jobs:
           paths:
             - /usr/local/cargo/registry
             - target
-          key: cargocache-cw721-ibc-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
+          key: cargocache-cw721-base-ibc-rust:1.58.1-{{ checksum "~/project/Cargo.lock" }}
 
 
   package_cw721:
     docker:
       - image: rust:1.58.1
-    working_directory: ~/project/packages/cw721
+    working_directory: ~/project/packages/cw721-ibc
     steps:
       - checkout:
           path: ~/project

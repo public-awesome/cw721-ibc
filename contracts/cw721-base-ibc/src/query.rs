@@ -3,7 +3,7 @@ use serde::Serialize;
 
 use cosmwasm_std::{to_binary, Addr, Binary, BlockInfo, Deps, Env, Order, StdError, StdResult};
 
-use cw721::{
+use cw721_ibc::{
     AllNftInfoResponse, ApprovalResponse, ApprovalsResponse, ContractInfoResponse, CustomMsg,
     Cw721Query, Expiration, NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse,
     TokensResponse,
@@ -31,8 +31,13 @@ where
         Ok(NumTokensResponse { count })
     }
 
-    fn nft_info(&self, deps: Deps, token_id: String) -> StdResult<NftInfoResponse<T>> {
-        let info = self.tokens.load(deps.storage, &token_id)?;
+    fn nft_info(
+        &self,
+        deps: Deps,
+        token_id: String,
+        class_id: String,
+    ) -> StdResult<NftInfoResponse<T>> {
+        let info = self.tokens.load(deps.storage, (&token_id, &class_id))?;
         Ok(NftInfoResponse {
             token_uri: info.token_uri,
             extension: info.extension,
@@ -44,9 +49,10 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String,
         include_expired: bool,
     ) -> StdResult<OwnerOfResponse> {
-        let info = self.tokens.load(deps.storage, &token_id)?;
+        let info = self.tokens.load(deps.storage, (&token_id, &class_id))?;
         Ok(OwnerOfResponse {
             owner: info.owner.to_string(),
             approvals: humanize_approvals(&env.block, &info, include_expired),
@@ -86,14 +92,15 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String,
         spender: String,
         include_expired: bool,
     ) -> StdResult<ApprovalResponse> {
-        let token = self.tokens.load(deps.storage, &token_id)?;
+        let token = self.tokens.load(deps.storage, (&token_id, &class_id))?;
 
         // token owner has absolute approval
         if token.owner == spender {
-            let approval = cw721::Approval {
+            let approval = cw721_ibc::Approval {
                 spender: token.owner.to_string(),
                 expires: Expiration::Never {},
             };
@@ -105,7 +112,7 @@ where
             .into_iter()
             .filter(|t| t.spender == spender)
             .filter(|t| include_expired || !t.is_expired(&env.block))
-            .map(|a| cw721::Approval {
+            .map(|a| cw721_ibc::Approval {
                 spender: a.spender.into_string(),
                 expires: a.expires,
             })
@@ -126,14 +133,15 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String,
         include_expired: bool,
     ) -> StdResult<ApprovalsResponse> {
-        let token = self.tokens.load(deps.storage, &token_id)?;
+        let token = self.tokens.load(deps.storage, (&token_id, &class_id))?;
         let approvals: Vec<_> = token
             .approvals
             .into_iter()
             .filter(|t| include_expired || !t.is_expired(&env.block))
-            .map(|a| cw721::Approval {
+            .map(|a| cw721_ibc::Approval {
                 spender: a.spender.into_string(),
                 expires: a.expires,
             })
@@ -153,15 +161,15 @@ where
         let start = start_after.map(|s| Bound::ExclusiveRaw(s.into()));
 
         let owner_addr = deps.api.addr_validate(&owner)?;
-        let tokens: Vec<String> = self
+        let tokens = self
             .tokens
             .idx
             .owner
             .prefix(owner_addr)
             .keys(deps.storage, start, None, Order::Ascending)
             .take(limit)
-            .map(|x| x.map(|addr| addr.to_string()))
-            .collect::<StdResult<Vec<_>>>()?;
+            .map(|x| x.map(|token_data| (token_data.0, token_data.1)))
+            .collect::<StdResult<Vec<(String, String)>>>()?;
 
         Ok(TokensResponse { tokens })
     }
@@ -175,12 +183,12 @@ where
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
         let start = start_after.map(|s| Bound::ExclusiveRaw(s.into()));
 
-        let tokens: StdResult<Vec<String>> = self
+        let tokens = self
             .tokens
             .range(deps.storage, start, None, Order::Ascending)
             .take(limit)
             .map(|item| item.map(|(k, _)| k))
-            .collect();
+            .collect::<StdResult<Vec<(String, String)>>>();
 
         Ok(TokensResponse { tokens: tokens? })
     }
@@ -190,9 +198,10 @@ where
         deps: Deps,
         env: Env,
         token_id: String,
+        class_id: String,
         include_expired: bool,
     ) -> StdResult<AllNftInfoResponse<T>> {
-        let info = self.tokens.load(deps.storage, &token_id)?;
+        let info = self.tokens.load(deps.storage, (&token_id, &class_id))?;
         Ok(AllNftInfoResponse {
             access: OwnerOfResponse {
                 owner: info.owner.to_string(),
@@ -222,20 +231,29 @@ where
         match msg {
             QueryMsg::Minter {} => to_binary(&self.minter(deps)?),
             QueryMsg::ContractInfo {} => to_binary(&self.contract_info(deps)?),
-            QueryMsg::NftInfo { token_id } => to_binary(&self.nft_info(deps, token_id)?),
+            QueryMsg::NftInfo { token_id, class_id } => {
+                to_binary(&self.nft_info(deps, token_id, class_id)?)
+            }
             QueryMsg::OwnerOf {
                 token_id,
+                class_id,
                 include_expired,
-            } => {
-                to_binary(&self.owner_of(deps, env, token_id, include_expired.unwrap_or(false))?)
-            }
+            } => to_binary(&self.owner_of(
+                deps,
+                env,
+                token_id,
+                class_id,
+                include_expired.unwrap_or(false),
+            )?),
             QueryMsg::AllNftInfo {
                 token_id,
+                class_id,
                 include_expired,
             } => to_binary(&self.all_nft_info(
                 deps,
                 env,
                 token_id,
+                class_id,
                 include_expired.unwrap_or(false),
             )?),
             QueryMsg::AllOperators {
@@ -262,27 +280,30 @@ where
             }
             QueryMsg::Approval {
                 token_id,
+                class_id,
                 spender,
                 include_expired,
             } => to_binary(&self.approval(
                 deps,
                 env,
                 token_id,
+                class_id,
                 spender,
                 include_expired.unwrap_or(false),
             )?),
             QueryMsg::Approvals {
                 token_id,
+                class_id, 
                 include_expired,
             } => {
-                to_binary(&self.approvals(deps, env, token_id, include_expired.unwrap_or(false))?)
+                to_binary(&self.approvals(deps, env, token_id, class_id, include_expired.unwrap_or(false))?)
             }
         }
     }
 }
 
-fn parse_approval(item: StdResult<(Addr, Expiration)>) -> StdResult<cw721::Approval> {
-    item.map(|(spender, expires)| cw721::Approval {
+fn parse_approval(item: StdResult<(Addr, Expiration)>) -> StdResult<cw721_ibc::Approval> {
+    item.map(|(spender, expires)| cw721_ibc::Approval {
         spender: spender.to_string(),
         expires,
     })
@@ -292,7 +313,7 @@ fn humanize_approvals<T>(
     block: &BlockInfo,
     info: &TokenInfo<T>,
     include_expired: bool,
-) -> Vec<cw721::Approval> {
+) -> Vec<cw721_ibc::Approval> {
     info.approvals
         .iter()
         .filter(|apr| include_expired || !apr.is_expired(block))
@@ -300,8 +321,8 @@ fn humanize_approvals<T>(
         .collect()
 }
 
-fn humanize_approval(approval: &Approval) -> cw721::Approval {
-    cw721::Approval {
+fn humanize_approval(approval: &Approval) -> cw721_ibc::Approval {
+    cw721_ibc::Approval {
         spender: approval.spender.to_string(),
         expires: approval.expires,
     }
