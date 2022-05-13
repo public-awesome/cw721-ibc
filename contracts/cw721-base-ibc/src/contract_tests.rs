@@ -764,7 +764,6 @@ fn query_tokens_by_owner() {
         .execute(deps.as_mut(), mock_env(), minter.clone(), mint_msg)
         .unwrap();
 
-    
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
         token_id: token_id3.clone(),
         class_id: class_id3.clone(),

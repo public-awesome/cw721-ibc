@@ -1,13 +1,13 @@
-use std::marker::PhantomData;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
+use std::marker::PhantomData;
 
 use cosmwasm_std::{to_binary, Addr, Binary, BlockInfo, Deps, Env, Order, StdError, StdResult};
 
 use cw721_ibc::{
     AllNftInfoResponse, ApprovalResponse, ApprovalsResponse, ContractInfoResponse, CustomMsg,
     Cw721Query, Expiration, NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse,
-    TokensResponse, TokenParams,
+    TokenParams, TokensResponse,
 };
 use cw_storage_plus::{Bound, PrimaryKey};
 use cw_utils::maybe_addr;
@@ -159,7 +159,7 @@ where
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
-        let start = start_after.map(|s| Bound::Exclusive(((s.token_id, s.class_id),  PhantomData)));
+        let start = start_after.map(|s| Bound::Exclusive(((s.token_id, s.class_id), PhantomData)));
 
         let owner_addr = deps.api.addr_validate(&owner)?;
         let tokens = self
@@ -175,7 +175,6 @@ where
         Ok(TokensResponse { tokens })
     }
 
-
     fn all_tokens(
         &self,
         deps: Deps,
@@ -184,12 +183,11 @@ where
     ) -> StdResult<TokensResponse> {
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
 
-        let key = start_after.map(|s|(s.token_id, s.class_id).joined_key()); 
+        let key = start_after.map(|s| (s.token_id, s.class_id).joined_key());
         let start = key.map(|s| Bound::ExclusiveRaw(s));
         let tokens = self
             .tokens
-            .range(deps.storage, start,
-                None, Order::Ascending)
+            .range(deps.storage, start, None, Order::Ascending)
             .take(limit)
             .map(|item| item.map(|(k, _)| k))
             .collect::<StdResult<Vec<(String, String)>>>()?;
@@ -279,9 +277,7 @@ where
                 start_after,
                 limit,
             } => to_binary(&self.tokens(deps, owner, start_after, limit)?),
-            QueryMsg::AllTokens { 
-                start_after,
-                 limit } => {
+            QueryMsg::AllTokens { start_after, limit } => {
                 to_binary(&self.all_tokens(deps, start_after, limit)?)
             }
             QueryMsg::Approval {
@@ -299,11 +295,15 @@ where
             )?),
             QueryMsg::Approvals {
                 token_id,
-                class_id, 
+                class_id,
                 include_expired,
-            } => {
-                to_binary(&self.approvals(deps, env, token_id, class_id, include_expired.unwrap_or(false))?)
-            }
+            } => to_binary(&self.approvals(
+                deps,
+                env,
+                token_id,
+                class_id,
+                include_expired.unwrap_or(false),
+            )?),
         }
     }
 }
