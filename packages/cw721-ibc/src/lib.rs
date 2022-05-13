@@ -5,7 +5,7 @@ mod traits;
 
 pub use cw_utils::Expiration;
 
-pub use crate::msg::Cw721ExecuteMsg;
+pub use crate::msg::{Cw721ExecuteMsg, TokenParams};
 pub use crate::query::{
     AllNftInfoResponse, Approval, ApprovalResponse, ApprovalsResponse, ContractInfoResponse,
     Cw721QueryMsg, NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse,

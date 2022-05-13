@@ -5,7 +5,7 @@ use serde::Serialize;
 use crate::query::ApprovalResponse;
 use crate::{
     AllNftInfoResponse, ApprovalsResponse, ContractInfoResponse, NftInfoResponse,
-    NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse,
+    NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse, TokenParams
 };
 use cosmwasm_std::{Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdResult};
 use cw_utils::Expiration;
@@ -96,6 +96,7 @@ where
         token_id: String,
         class_id: String, 
     ) -> Result<Response<C>, Self::Err>;
+    
 }
 
 pub trait Cw721Query<T>
@@ -153,14 +154,14 @@ where
         &self,
         deps: Deps,
         owner: String,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse>;
 
     fn all_tokens(
         &self,
         deps: Deps,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse>;
 
