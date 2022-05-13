@@ -2,7 +2,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::Binary;
-use cw721_ibc::Expiration;
+use cw721_ibc::{Expiration, TokenParams};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {
@@ -147,16 +147,17 @@ pub enum QueryMsg {
     /// Return type: TokensResponse.
     Tokens {
         owner: String,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     },
     /// With Enumerable extension.
     /// Requires pagination. Lists all token_ids controlled by the contract.
     /// Return type: TokensResponse.
     AllTokens {
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     },
+
 
     // Return the minter
     Minter {},

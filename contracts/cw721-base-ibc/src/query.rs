@@ -1,3 +1,5 @@
+use std::marker::PhantomData;
+extern crate tuple_conv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
@@ -6,9 +8,9 @@ use cosmwasm_std::{to_binary, Addr, Binary, BlockInfo, Deps, Env, Order, StdErro
 use cw721_ibc::{
     AllNftInfoResponse, ApprovalResponse, ApprovalsResponse, ContractInfoResponse, CustomMsg,
     Cw721Query, Expiration, NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse,
-    TokensResponse,
+    TokensResponse, TokenParams,
 };
-use cw_storage_plus::Bound;
+use cw_storage_plus::{Bound, PrimaryKey};
 use cw_utils::maybe_addr;
 
 use crate::msg::{MinterResponse, QueryMsg};
@@ -154,11 +156,11 @@ where
         &self,
         deps: Deps,
         owner: String,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
-        let start = start_after.map(|s| Bound::ExclusiveRaw(s.into()));
+        let start = start_after.map(|s| Bound::Exclusive(((s.token_id, s.class_id),  PhantomData)));
 
         let owner_addr = deps.api.addr_validate(&owner)?;
         let tokens = self
@@ -174,23 +176,26 @@ where
         Ok(TokensResponse { tokens })
     }
 
+
     fn all_tokens(
         &self,
         deps: Deps,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
-        let start = start_after.map(|s| Bound::ExclusiveRaw(s.into()));
 
+        let key = start_after.map(|s|(s.token_id, s.class_id).joined_key()); 
+        let start = key.map(|s| Bound::ExclusiveRaw(s));
         let tokens = self
             .tokens
-            .range(deps.storage, start, None, Order::Ascending)
+            .range(deps.storage, start,
+                None, Order::Ascending)
             .take(limit)
             .map(|item| item.map(|(k, _)| k))
-            .collect::<StdResult<Vec<(String, String)>>>();
+            .collect::<StdResult<Vec<(String, String)>>>()?;
 
-        Ok(TokensResponse { tokens: tokens? })
+        Ok(TokensResponse { tokens: tokens })
     }
 
     fn all_nft_info(
@@ -275,7 +280,9 @@ where
                 start_after,
                 limit,
             } => to_binary(&self.tokens(deps, owner, start_after, limit)?),
-            QueryMsg::AllTokens { start_after, limit } => {
+            QueryMsg::AllTokens { 
+                start_after,
+                 limit } => {
                 to_binary(&self.all_tokens(deps, start_after, limit)?)
             }
             QueryMsg::Approval {

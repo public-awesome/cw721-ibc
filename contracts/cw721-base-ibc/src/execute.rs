@@ -102,13 +102,14 @@ where
             token_uri: msg.token_uri,
             extension: msg.extension,
         };
-        self.tokens
+
+         self.tokens
             .update(deps.storage, (&msg.token_id, &msg.class_id), |old| match old {
                 Some(_) => Err(ContractError::Claimed {}),
                 None => Ok(token),
             })?;
-
         self.increment_tokens(deps.storage)?;
+
 
         Ok(Response::new()
             .add_attribute("action", "mint")

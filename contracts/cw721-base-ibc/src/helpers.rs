@@ -2,7 +2,7 @@ use crate::{ExecuteMsg, QueryMsg};
 use cosmwasm_std::{to_binary, Addr, CosmosMsg, QuerierWrapper, StdResult, WasmMsg, WasmQuery};
 use cw721_ibc::{
     AllNftInfoResponse, Approval, ApprovalResponse, ApprovalsResponse, ContractInfoResponse,
-    NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse,
+    NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse, TokenParams,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -155,7 +155,7 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         owner: T,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let req = QueryMsg::Tokens {
@@ -170,7 +170,7 @@ impl Cw721Contract {
     pub fn all_tokens(
         &self,
         querier: &QuerierWrapper,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let req = QueryMsg::AllTokens { start_after, limit };
