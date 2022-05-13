@@ -13,10 +13,14 @@
         "transfer_nft": {
           "type": "object",
           "required": [
+            "class_id",
             "recipient",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "recipient": {
               "type": "string"
             },
@@ -38,11 +42,15 @@
         "send_nft": {
           "type": "object",
           "required": [
+            "class_id",
             "contract",
             "msg",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "contract": {
               "type": "string"
             },
@@ -67,10 +75,14 @@
         "approve": {
           "type": "object",
           "required": [
+            "class_id",
             "spender",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "expires": {
               "anyOf": [
                 {
@@ -102,10 +114,14 @@
         "revoke": {
           "type": "object",
           "required": [
+            "class_id",
             "spender",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "spender": {
               "type": "string"
             },
@@ -192,9 +208,13 @@
         "burn": {
           "type": "object",
           "required": [
+            "class_id",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "token_id": {
               "type": "string"
             }
@@ -262,10 +282,14 @@
     "MintMsg_for_Nullable_Empty": {
       "type": "object",
       "required": [
+        "class_id",
         "owner",
         "token_id"
       ],
       "properties": {
+        "class_id": {
+          "type": "string"
+        },
         "extension": {
           "description": "Any custom extension used by this contract",
           "anyOf": [

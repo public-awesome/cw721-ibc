@@ -10,7 +10,17 @@
       "description": "Contains all token_ids in lexicographical ordering If there are more than `limit`, use `start_from` in future queries to achieve pagination.",
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "array",
+        "items": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "maxItems": 2,
+        "minItems": 2
       }
     }
   }
