@@ -303,14 +303,14 @@ where
         token_id: &str,
         class_id: &str,
     ) -> Result<TokenInfo<T>, ContractError> {
-        let mut token = self.tokens.load(deps.storage, (&token_id, &class_id))?;
+        let mut token = self.tokens.load(deps.storage, (token_id, class_id))?;
         // ensure we have permissions
         self.check_can_send(deps.as_ref(), env, info, &token)?;
         // set owner and remove existing approvals
         token.owner = deps.api.addr_validate(recipient)?;
         token.approvals = vec![];
         self.tokens
-            .save(deps.storage, (token_id, &class_id), &token)?;
+            .save(deps.storage, (token_id, class_id), &token)?;
         Ok(token)
     }
 
@@ -327,7 +327,7 @@ where
         add: bool,
         expires: Option<Expiration>,
     ) -> Result<TokenInfo<T>, ContractError> {
-        let mut token = self.tokens.load(deps.storage, (&token_id, &class_id))?;
+        let mut token = self.tokens.load(deps.storage, (token_id, class_id))?;
         // ensure we have permissions
         self.check_can_approve(deps.as_ref(), env, info, &token)?;
 
@@ -354,7 +354,7 @@ where
         }
 
         self.tokens
-            .save(deps.storage, (&token_id, &class_id), &token)?;
+            .save(deps.storage, (token_id, class_id), &token)?;
 
         Ok(token)
     }

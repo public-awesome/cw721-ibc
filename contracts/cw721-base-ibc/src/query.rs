@@ -184,7 +184,7 @@ where
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
 
         let key = start_after.map(|s| (s.token_id, s.class_id).joined_key());
-        let start = key.map(|s| Bound::ExclusiveRaw(s));
+        let start: Option<Bound<(&str, &str)>>  = key.map(Bound::ExclusiveRaw);
         let tokens = self
             .tokens
             .range(deps.storage, start, None, Order::Ascending)
@@ -192,7 +192,7 @@ where
             .map(|item| item.map(|(k, _)| k))
             .collect::<StdResult<Vec<(String, String)>>>()?;
 
-        Ok(TokensResponse { tokens: tokens })
+        Ok(TokensResponse { tokens })
     }
 
     fn all_nft_info(

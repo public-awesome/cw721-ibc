@@ -772,7 +772,7 @@ fn query_tokens_by_owner() {
         extension: None,
     });
     contract
-        .execute(deps.as_mut(), mock_env(), minter.clone(), mint_msg)
+        .execute(deps.as_mut(), mock_env(), minter, mint_msg)
         .unwrap();
 
     // get all tokens in order:
