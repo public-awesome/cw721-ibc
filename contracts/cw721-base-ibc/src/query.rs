@@ -184,7 +184,7 @@ where
         let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
 
         let key = start_after.map(|s| (s.token_id, s.class_id).joined_key());
-        let start: Option<Bound<(&str, &str)>>  = key.map(Bound::ExclusiveRaw);
+        let start: Option<Bound<(&str, &str)>> = key.map(Bound::ExclusiveRaw);
         let tokens = self
             .tokens
             .range(deps.storage, start, None, Order::Ascending)
