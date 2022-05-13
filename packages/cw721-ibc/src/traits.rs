@@ -39,7 +39,7 @@ where
         class_id: String,
     ) -> Result<Response<C>, Self::Err>;
 
-    #[allow(clippy::too_many_arguments)] 
+    #[allow(clippy::too_many_arguments)]
     fn send_nft(
         &self,
         deps: DepsMut,
@@ -51,7 +51,7 @@ where
         msg: Binary,
     ) -> Result<Response<C>, Self::Err>;
 
-    #[allow(clippy::too_many_arguments)] 
+    #[allow(clippy::too_many_arguments)]
     fn approve(
         &self,
         deps: DepsMut,
