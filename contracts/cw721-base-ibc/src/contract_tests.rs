@@ -739,7 +739,7 @@ fn query_tokens_by_owner() {
     let token_id2 = "grow2".to_string();
     let class_id2 = "transfer-nft/chain-9".to_string();
     let ceres = String::from("ceres");
-    let token_id3 = "sing".to_string();
+    let token_id3 = "sing1".to_string();
     let class_id3 = "transfer-nft/chain-10".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {

@@ -1,5 +1,4 @@
 use std::marker::PhantomData;
-extern crate tuple_conv;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 
