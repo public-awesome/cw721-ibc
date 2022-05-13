@@ -37,6 +37,6 @@ pub enum Cw721ExecuteMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct TokenParams {
-    pub token_id: String,
     pub class_id: String,
+    pub token_id: String,
 }

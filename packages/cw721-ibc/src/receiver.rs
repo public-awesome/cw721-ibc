@@ -8,6 +8,7 @@ use cosmwasm_std::{to_binary, Binary, CosmosMsg, StdResult, WasmMsg};
 #[serde(rename_all = "snake_case")]
 pub struct Cw721ReceiveMsg {
     pub sender: String,
+    pub class_id: String,
     pub token_id: String,
     pub msg: Binary,
 }

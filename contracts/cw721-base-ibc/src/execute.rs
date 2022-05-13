@@ -49,32 +49,32 @@ where
             ExecuteMsg::Mint(msg) => self.mint(deps, env, info, msg),
             ExecuteMsg::Approve {
                 spender,
-                token_id,
                 class_id,
+                token_id,
                 expires,
-            } => self.approve(deps, env, info, spender, token_id, class_id, expires),
+            } => self.approve(deps, env, info, spender, class_id, token_id, expires),
             ExecuteMsg::Revoke {
                 spender,
-                token_id,
                 class_id,
-            } => self.revoke(deps, env, info, spender, token_id, class_id),
+                token_id,
+            } => self.revoke(deps, env, info, spender, class_id, token_id),
             ExecuteMsg::ApproveAll { operator, expires } => {
                 self.approve_all(deps, env, info, operator, expires)
             }
             ExecuteMsg::RevokeAll { operator } => self.revoke_all(deps, env, info, operator),
             ExecuteMsg::TransferNft {
                 recipient,
-                token_id,
                 class_id,
-            } => self.transfer_nft(deps, env, info, recipient, token_id, class_id),
+                token_id,
+            } => self.transfer_nft(deps, env, info, recipient, class_id, token_id),
             ExecuteMsg::SendNft {
                 contract,
-                token_id,
                 class_id,
+                token_id,
                 msg,
-            } => self.send_nft(deps, env, info, contract, token_id, class_id, msg),
-            ExecuteMsg::Burn { token_id, class_id } => {
-                self.burn(deps, env, info, token_id, class_id)
+            } => self.send_nft(deps, env, info, contract, class_id, token_id, msg),
+            ExecuteMsg::Burn { class_id, token_id } => {
+                self.burn(deps, env, info, class_id, token_id)
             }
         }
     }
@@ -109,7 +109,7 @@ where
 
         self.tokens.update(
             deps.storage,
-            (&msg.token_id, &msg.class_id),
+            (&msg.class_id, &msg.token_id),
             |old| match old {
                 Some(_) => Err(ContractError::Claimed {}),
                 None => Ok(token),
@@ -121,8 +121,8 @@ where
             .add_attribute("action", "mint")
             .add_attribute("minter", info.sender)
             .add_attribute("owner", msg.owner)
-            .add_attribute("token_id", msg.token_id)
-            .add_attribute("class_id", msg.class_id))
+            .add_attribute("class_id", msg.class_id)
+            .add_attribute("token_id", msg.token_id))
     }
 }
 
@@ -139,17 +139,17 @@ where
         env: Env,
         info: MessageInfo,
         recipient: String,
-        token_id: String,
         class_id: String,
+        token_id: String,
     ) -> Result<Response<C>, ContractError> {
-        self._transfer_nft(deps, &env, &info, &recipient, &token_id, &class_id)?;
+        self._transfer_nft(deps, &env, &info, &recipient, &class_id, &token_id)?;
 
         Ok(Response::new()
             .add_attribute("action", "transfer_nft")
             .add_attribute("sender", info.sender)
             .add_attribute("recipient", recipient)
-            .add_attribute("token_id", token_id)
-            .add_attribute("class_id", class_id))
+            .add_attribute("class_id", class_id)
+            .add_attribute("token_id", token_id))
     }
 
     fn send_nft(
@@ -158,15 +158,16 @@ where
         env: Env,
         info: MessageInfo,
         contract: String,
-        token_id: String,
         class_id: String,
+        token_id: String,
         msg: Binary,
     ) -> Result<Response<C>, ContractError> {
         // Transfer token
-        self._transfer_nft(deps, &env, &info, &contract, &token_id, &class_id)?;
+        self._transfer_nft(deps, &env, &info, &contract, &class_id, &token_id)?;
 
         let send = Cw721ReceiveMsg {
             sender: info.sender.to_string(),
+            class_id: class_id.clone(),
             token_id: token_id.clone(),
             msg,
         };
@@ -177,8 +178,8 @@ where
             .add_attribute("action", "send_nft")
             .add_attribute("sender", info.sender)
             .add_attribute("recipient", contract)
-            .add_attribute("token_id", token_id)
-            .add_attribute("class_id", class_id))
+            .add_attribute("class_id", class_id)
+            .add_attribute("token_id", token_id))
     }
 
     fn approve(
@@ -187,20 +188,20 @@ where
         env: Env,
         info: MessageInfo,
         spender: String,
-        token_id: String,
         class_id: String,
+        token_id: String,
         expires: Option<Expiration>,
     ) -> Result<Response<C>, ContractError> {
         self._update_approvals(
-            deps, &env, &info, &spender, &token_id, &class_id, true, expires,
+            deps, &env, &info, &spender, &class_id, &token_id, true, expires,
         )?;
 
         Ok(Response::new()
             .add_attribute("action", "approve")
             .add_attribute("sender", info.sender)
             .add_attribute("spender", spender)
-            .add_attribute("token_id", token_id)
-            .add_attribute("class_id", class_id))
+            .add_attribute("class_id", class_id)
+            .add_attribute("token_id", token_id))
     }
 
     fn revoke(
@@ -209,19 +210,19 @@ where
         env: Env,
         info: MessageInfo,
         spender: String,
-        token_id: String,
         class_id: String,
+        token_id: String,
     ) -> Result<Response<C>, ContractError> {
         self._update_approvals(
-            deps, &env, &info, &spender, &token_id, &class_id, false, None,
+            deps, &env, &info, &spender, &class_id, &token_id, false, None,
         )?;
 
         Ok(Response::new()
             .add_attribute("action", "revoke")
             .add_attribute("sender", info.sender)
             .add_attribute("spender", spender)
-            .add_attribute("token_id", token_id)
-            .add_attribute("class_id", class_id))
+            .add_attribute("class_id", class_id)
+            .add_attribute("token_id", token_id))
     }
 
     fn approve_all(
@@ -271,20 +272,20 @@ where
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        token_id: String,
         class_id: String,
+        token_id: String,
     ) -> Result<Response<C>, ContractError> {
-        let token = self.tokens.load(deps.storage, (&token_id, &class_id))?;
+        let token = self.tokens.load(deps.storage, (&class_id, &token_id))?;
         self.check_can_send(deps.as_ref(), &env, &info, &token)?;
 
-        self.tokens.remove(deps.storage, (&token_id, &class_id))?;
+        self.tokens.remove(deps.storage, (&class_id, &token_id))?;
         self.decrement_tokens(deps.storage)?;
 
         Ok(Response::new()
             .add_attribute("action", "burn")
             .add_attribute("sender", info.sender)
-            .add_attribute("token_id", token_id)
-            .add_attribute("class_id", class_id))
+            .add_attribute("class_id", class_id)
+            .add_attribute("token_id", token_id))
     }
 }
 
@@ -300,17 +301,17 @@ where
         env: &Env,
         info: &MessageInfo,
         recipient: &str,
-        token_id: &str,
         class_id: &str,
+        token_id: &str,
     ) -> Result<TokenInfo<T>, ContractError> {
-        let mut token = self.tokens.load(deps.storage, (token_id, class_id))?;
+        let mut token = self.tokens.load(deps.storage, (class_id, token_id))?;
         // ensure we have permissions
         self.check_can_send(deps.as_ref(), env, info, &token)?;
         // set owner and remove existing approvals
         token.owner = deps.api.addr_validate(recipient)?;
         token.approvals = vec![];
         self.tokens
-            .save(deps.storage, (token_id, class_id), &token)?;
+            .save(deps.storage, (class_id, token_id), &token)?;
         Ok(token)
     }
 
@@ -321,13 +322,13 @@ where
         env: &Env,
         info: &MessageInfo,
         spender: &str,
-        token_id: &str,
         class_id: &str,
+        token_id: &str,
         // if add == false, remove. if add == true, remove then set with this expiration
         add: bool,
         expires: Option<Expiration>,
     ) -> Result<TokenInfo<T>, ContractError> {
-        let mut token = self.tokens.load(deps.storage, (token_id, class_id))?;
+        let mut token = self.tokens.load(deps.storage, (class_id, token_id))?;
         // ensure we have permissions
         self.check_can_approve(deps.as_ref(), env, info, &token)?;
 
@@ -354,7 +355,7 @@ where
         }
 
         self.tokens
-            .save(deps.storage, (token_id, class_id), &token)?;
+            .save(deps.storage, (class_id, token_id), &token)?;
 
         Ok(token)
     }

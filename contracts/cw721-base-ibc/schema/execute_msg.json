@@ -288,6 +288,7 @@
       ],
       "properties": {
         "class_id": {
+          "description": "source chain of the NFT",
           "type": "string"
         },
         "extension": {
