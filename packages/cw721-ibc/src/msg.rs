@@ -34,3 +34,9 @@ pub enum Cw721ExecuteMsg {
     /// Remove previously granted ApproveAll permission
     RevokeAll { operator: String },
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct TokenParams {
+    pub class_id: String,
+    pub token_id: String,
+}

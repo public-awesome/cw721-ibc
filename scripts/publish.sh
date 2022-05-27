@@ -7,7 +7,6 @@ ALL_PACKAGES="cw721"
 
 # these are imported by other contracts
 BASE_CONTRACTS="cw721-base"
-ALL_CONTRACTS="cw721-metadata-onchain"
 
 SLEEP_TIME=30
 
@@ -35,12 +34,5 @@ done
 echo "Waiting for publishing base packages"
 sleep $SLEEP_TIME
 
-for cont in $ALL_CONTRACTS; do
-  (
-    cd "contracts/$cont"
-    echo "Publishing $cont"
-    cargo publish
-  )
-done
 
 echo "Everything is published!"

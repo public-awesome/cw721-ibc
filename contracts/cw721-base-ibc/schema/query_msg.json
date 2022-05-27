@@ -12,9 +12,13 @@
         "owner_of": {
           "type": "object",
           "required": [
+            "class_id",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "include_expired": {
               "description": "unset or false will filter out expired approvals, you must set to true to see them",
               "type": [
@@ -40,10 +44,14 @@
         "approval": {
           "type": "object",
           "required": [
+            "class_id",
             "spender",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "include_expired": {
               "type": [
                 "boolean",
@@ -71,9 +79,13 @@
         "approvals": {
           "type": "object",
           "required": [
+            "class_id",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "include_expired": {
               "type": [
                 "boolean",
@@ -166,9 +178,13 @@
         "nft_info": {
           "type": "object",
           "required": [
+            "class_id",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "token_id": {
               "type": "string"
             }
@@ -187,9 +203,13 @@
         "all_nft_info": {
           "type": "object",
           "required": [
+            "class_id",
             "token_id"
           ],
           "properties": {
+            "class_id": {
+              "type": "string"
+            },
             "include_expired": {
               "description": "unset or false will filter out expired approvals, you must set to true to see them",
               "type": [
@@ -230,9 +250,13 @@
               "type": "string"
             },
             "start_after": {
-              "type": [
-                "string",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/TokenParams"
+                },
+                {
+                  "type": "null"
+                }
               ]
             }
           }
@@ -259,9 +283,13 @@
               "minimum": 0.0
             },
             "start_after": {
-              "type": [
-                "string",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/TokenParams"
+                },
+                {
+                  "type": "null"
+                }
               ]
             }
           }
@@ -281,5 +309,22 @@
       },
       "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "TokenParams": {
+      "type": "object",
+      "required": [
+        "class_id",
+        "token_id"
+      ],
+      "properties": {
+        "class_id": {
+          "type": "string"
+        },
+        "token_id": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

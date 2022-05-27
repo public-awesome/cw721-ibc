@@ -4,7 +4,7 @@ use cosmwasm_std::{from_binary, to_binary, CosmosMsg, DepsMut, Empty, Response, 
 
 use cw721_ibc::{
     Approval, ApprovalResponse, ContractInfoResponse, Cw721Query, Cw721ReceiveMsg, Expiration,
-    NftInfoResponse, OperatorsResponse, OwnerOfResponse,
+    NftInfoResponse, OperatorsResponse, OwnerOfResponse, TokenParams,
 };
 
 use crate::{
@@ -72,9 +72,11 @@ fn minting() {
     let contract = setup_contract(deps.as_mut());
 
     let token_id = "petrify".to_string();
+    let class_id = "transfer-nft/chain-1".to_string();
     let token_uri = "https://www.merriam-webster.com/dictionary/petrify".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         owner: String::from("medusa"),
         token_uri: Some(token_uri.clone()),
@@ -100,11 +102,17 @@ fn minting() {
 
     // unknown nft returns error
     let _ = contract
-        .nft_info(deps.as_ref(), "unknown".to_string())
+        .nft_info(
+            deps.as_ref(),
+            "unknown-class".to_string(),
+            "unknown-token".to_string(),
+        )
         .unwrap_err();
 
     // this nft info is correct
-    let info = contract.nft_info(deps.as_ref(), token_id.clone()).unwrap();
+    let info = contract
+        .nft_info(deps.as_ref(), class_id.clone(), token_id.clone())
+        .unwrap();
     assert_eq!(
         info,
         NftInfoResponse::<Extension> {
@@ -115,7 +123,13 @@ fn minting() {
 
     // owner info is correct
     let owner = contract
-        .owner_of(deps.as_ref(), mock_env(), token_id.clone(), true)
+        .owner_of(
+            deps.as_ref(),
+            mock_env(),
+            class_id.to_string(),
+            token_id.clone(),
+            true,
+        )
         .unwrap();
     assert_eq!(
         owner,
@@ -127,6 +141,7 @@ fn minting() {
 
     // Cannot mint same token_id again
     let mint_msg2 = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         owner: String::from("hercules"),
         token_uri: None,
@@ -142,7 +157,7 @@ fn minting() {
     // list the token_ids
     let tokens = contract.all_tokens(deps.as_ref(), None, None).unwrap();
     assert_eq!(1, tokens.tokens.len());
-    assert_eq!(vec![token_id], tokens.tokens);
+    assert_eq!(vec![(class_id, token_id)], tokens.tokens);
 }
 
 #[test]
@@ -151,16 +166,18 @@ fn burning() {
     let contract = setup_contract(deps.as_mut());
 
     let token_id = "petrify".to_string();
+    let class_id = "transfer-nft/chain-2".to_string();
     let token_uri = "https://www.merriam-webster.com/dictionary/petrify".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         owner: MINTER.to_string(),
         token_uri: Some(token_uri),
         extension: None,
     });
 
-    let burn_msg = ExecuteMsg::Burn { token_id };
+    let burn_msg = ExecuteMsg::Burn { class_id, token_id };
 
     // mint some NFT
     let allowed = mock_info(MINTER, &[]);
@@ -186,7 +203,11 @@ fn burning() {
 
     // trying to get nft returns error
     let _ = contract
-        .nft_info(deps.as_ref(), "petrify".to_string())
+        .nft_info(
+            deps.as_ref(),
+            "petrify".to_string(),
+            "transfer-nft/chain-2".to_string(),
+        )
         .unwrap_err();
 
     // list the token_ids
@@ -201,9 +222,11 @@ fn transferring_nft() {
 
     // Mint a token
     let token_id = "melt".to_string();
+    let class_id = "transfer-nft/chain-3".to_string();
     let token_uri = "https://www.merriam-webster.com/dictionary/melt".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         owner: String::from("venus"),
         token_uri: Some(token_uri),
@@ -219,6 +242,7 @@ fn transferring_nft() {
     let random = mock_info("random", &[]);
     let transfer_msg = ExecuteMsg::TransferNft {
         recipient: String::from("random"),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
     };
 
@@ -231,6 +255,7 @@ fn transferring_nft() {
     let random = mock_info("venus", &[]);
     let transfer_msg = ExecuteMsg::TransferNft {
         recipient: String::from("random"),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
     };
 
@@ -244,6 +269,7 @@ fn transferring_nft() {
             .add_attribute("action", "transfer_nft")
             .add_attribute("sender", "venus")
             .add_attribute("recipient", "random")
+            .add_attribute("class_id", class_id)
             .add_attribute("token_id", token_id)
     );
 }
@@ -255,9 +281,11 @@ fn sending_nft() {
 
     // Mint a token
     let token_id = "melt".to_string();
+    let class_id = "transfer-nft/chain-4".to_string();
     let token_uri = "https://www.merriam-webster.com/dictionary/melt".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         owner: String::from("venus"),
         token_uri: Some(token_uri),
@@ -273,6 +301,7 @@ fn sending_nft() {
     let target = String::from("another_contract");
     let send_msg = ExecuteMsg::SendNft {
         contract: target.clone(),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         msg: msg.clone(),
     };
@@ -291,6 +320,7 @@ fn sending_nft() {
 
     let payload = Cw721ReceiveMsg {
         sender: String::from("venus"),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         msg,
     };
@@ -310,6 +340,7 @@ fn sending_nft() {
             .add_attribute("action", "send_nft")
             .add_attribute("sender", "venus")
             .add_attribute("recipient", "another_contract")
+            .add_attribute("class_id", class_id)
             .add_attribute("token_id", token_id)
     );
 }
@@ -321,9 +352,11 @@ fn approving_revoking() {
 
     // Mint a token
     let token_id = "grow".to_string();
+    let class_id = "transfer-nft/chain-5".to_string();
     let token_uri = "https://www.merriam-webster.com/dictionary/grow".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         owner: String::from("demeter"),
         token_uri: Some(token_uri),
@@ -340,6 +373,7 @@ fn approving_revoking() {
         .approval(
             deps.as_ref(),
             mock_env(),
+            class_id.clone(),
             token_id.clone(),
             String::from("demeter"),
             false,
@@ -358,6 +392,7 @@ fn approving_revoking() {
     // Give random transferring power
     let approve_msg = ExecuteMsg::Approve {
         spender: String::from("random"),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         expires: None,
     };
@@ -371,6 +406,7 @@ fn approving_revoking() {
             .add_attribute("action", "approve")
             .add_attribute("sender", "demeter")
             .add_attribute("spender", "random")
+            .add_attribute("class_id", class_id.clone())
             .add_attribute("token_id", token_id.clone())
     );
 
@@ -379,6 +415,7 @@ fn approving_revoking() {
         .approval(
             deps.as_ref(),
             mock_env(),
+            class_id.clone(),
             token_id.clone(),
             String::from("random"),
             true,
@@ -398,6 +435,7 @@ fn approving_revoking() {
     let random = mock_info("random", &[]);
     let transfer_msg = ExecuteMsg::TransferNft {
         recipient: String::from("person"),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
     };
     contract
@@ -406,6 +444,7 @@ fn approving_revoking() {
 
     // Approvals are removed / cleared
     let query_msg = QueryMsg::OwnerOf {
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         include_expired: None,
     };
@@ -426,6 +465,7 @@ fn approving_revoking() {
     // Approve, revoke, and check for empty, to test revoke
     let approve_msg = ExecuteMsg::Approve {
         spender: String::from("random"),
+        class_id: class_id.clone(),
         token_id: token_id.clone(),
         expires: None,
     };
@@ -436,6 +476,7 @@ fn approving_revoking() {
 
     let revoke_msg = ExecuteMsg::Revoke {
         spender: String::from("random"),
+        class_id,
         token_id,
     };
     contract
@@ -465,12 +506,15 @@ fn approving_all_revoking_all() {
 
     // Mint a couple tokens (from the same owner)
     let token_id1 = "grow1".to_string();
+    let class_id1 = "transfer-nft/chain-6".to_string();
     let token_uri1 = "https://www.merriam-webster.com/dictionary/grow1".to_string();
 
     let token_id2 = "grow2".to_string();
+    let class_id2 = "transfer-nft/chain-7".to_string();
     let token_uri2 = "https://www.merriam-webster.com/dictionary/grow2".to_string();
 
     let mint_msg1 = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id1.clone(),
         token_id: token_id1.clone(),
         owner: String::from("demeter"),
         token_uri: Some(token_uri1),
@@ -483,6 +527,7 @@ fn approving_all_revoking_all() {
         .unwrap();
 
     let mint_msg2 = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id2.clone(),
         token_id: token_id2.clone(),
         owner: String::from("demeter"),
         token_uri: Some(token_uri2),
@@ -496,12 +541,19 @@ fn approving_all_revoking_all() {
     // paginate the token_ids
     let tokens = contract.all_tokens(deps.as_ref(), None, Some(1)).unwrap();
     assert_eq!(1, tokens.tokens.len());
-    assert_eq!(vec![token_id1.clone()], tokens.tokens);
+    assert_eq!(vec![(class_id1.clone(), token_id1.clone())], tokens.tokens);
     let tokens = contract
-        .all_tokens(deps.as_ref(), Some(token_id1.clone()), Some(3))
+        .all_tokens(
+            deps.as_ref(),
+            Some(TokenParams {
+                class_id: class_id1.clone(),
+                token_id: token_id1.clone(),
+            }),
+            Some(3),
+        )
         .unwrap();
     assert_eq!(1, tokens.tokens.len());
-    assert_eq!(vec![token_id2.clone()], tokens.tokens);
+    assert_eq!(vec![(class_id2.clone(), token_id2.clone())], tokens.tokens);
 
     // demeter gives random full (operator) power over her tokens
     let approve_all_msg = ExecuteMsg::ApproveAll {
@@ -524,6 +576,7 @@ fn approving_all_revoking_all() {
     let random = mock_info("random", &[]);
     let transfer_msg = ExecuteMsg::TransferNft {
         recipient: String::from("person"),
+        class_id: class_id1,
         token_id: token_id1,
     };
     contract
@@ -540,6 +593,7 @@ fn approving_all_revoking_all() {
 
     let send_msg = ExecuteMsg::SendNft {
         contract: String::from("another_contract"),
+        class_id: class_id2,
         token_id: token_id2,
         msg: to_binary(&msg).unwrap(),
     };
@@ -681,13 +735,17 @@ fn query_tokens_by_owner() {
 
     // Mint a couple tokens (from the same owner)
     let token_id1 = "grow1".to_string();
+    let class_id1 = "transfer-nft/chain-8".to_string();
     let demeter = String::from("demeter");
     let token_id2 = "grow2".to_string();
+    let class_id2 = "transfer-nft/chain-9".to_string();
     let ceres = String::from("ceres");
-    let token_id3 = "sing".to_string();
+    let token_id3 = "sing1".to_string();
+    let class_id3 = "transfer-nft/chain-10".to_string();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
         token_id: token_id1.clone(),
+        class_id: class_id1.clone(),
         owner: demeter.clone(),
         token_uri: None,
         extension: None,
@@ -697,6 +755,7 @@ fn query_tokens_by_owner() {
         .unwrap();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id2.clone(),
         token_id: token_id2.clone(),
         owner: ceres.clone(),
         token_uri: None,
@@ -707,6 +766,7 @@ fn query_tokens_by_owner() {
         .unwrap();
 
     let mint_msg = ExecuteMsg::Mint(MintMsg::<Extension> {
+        class_id: class_id3.clone(),
         token_id: token_id3.clone(),
         owner: demeter.clone(),
         token_uri: None,
@@ -717,20 +777,31 @@ fn query_tokens_by_owner() {
         .unwrap();
 
     // get all tokens in order:
-    let expected = vec![token_id1.clone(), token_id2.clone(), token_id3.clone()];
+    let expected = vec![
+        (class_id1.clone(), token_id1.clone()),
+        (class_id2.clone(), token_id2.clone()),
+        (class_id3.clone(), token_id3.clone()),
+    ];
     let tokens = contract.all_tokens(deps.as_ref(), None, None).unwrap();
     assert_eq!(&expected, &tokens.tokens);
     // paginate
     let tokens = contract.all_tokens(deps.as_ref(), None, Some(2)).unwrap();
     assert_eq!(&expected[..2], &tokens.tokens[..]);
     let tokens = contract
-        .all_tokens(deps.as_ref(), Some(expected[1].clone()), None)
+        .all_tokens(
+            deps.as_ref(),
+            Some(TokenParams {
+                class_id: expected[1].0.clone(),
+                token_id: expected[1].1.clone(),
+            }),
+            None,
+        )
         .unwrap();
     assert_eq!(&expected[2..], &tokens.tokens[..]);
 
     // get by owner
-    let by_ceres = vec![token_id2];
-    let by_demeter = vec![token_id1, token_id3];
+    let by_ceres = vec![(class_id2, token_id2)];
+    let by_demeter = vec![(class_id1, token_id1), (class_id3, token_id3)];
     // all tokens by owner
     let tokens = contract
         .tokens(deps.as_ref(), demeter.clone(), None, None)
@@ -745,7 +816,15 @@ fn query_tokens_by_owner() {
         .unwrap();
     assert_eq!(&by_demeter[..1], &tokens.tokens[..]);
     let tokens = contract
-        .tokens(deps.as_ref(), demeter, Some(by_demeter[0].clone()), Some(3))
+        .tokens(
+            deps.as_ref(),
+            demeter,
+            Some(TokenParams {
+                class_id: by_demeter[0].0.clone(),
+                token_id: by_demeter[0].1.clone(),
+            }),
+            Some(3),
+        )
         .unwrap();
     assert_eq!(&by_demeter[1..], &tokens.tokens[..]);
 }

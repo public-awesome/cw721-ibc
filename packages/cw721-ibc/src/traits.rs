@@ -5,7 +5,7 @@ use serde::Serialize;
 use crate::query::ApprovalResponse;
 use crate::{
     AllNftInfoResponse, ApprovalsResponse, ContractInfoResponse, NftInfoResponse,
-    NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse,
+    NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokenParams, TokensResponse,
 };
 use cosmwasm_std::{Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdResult};
 use cw_utils::Expiration;
@@ -35,25 +35,30 @@ where
         env: Env,
         info: MessageInfo,
         recipient: String,
+        class_id: String,
         token_id: String,
     ) -> Result<Response<C>, Self::Err>;
 
+    #[allow(clippy::too_many_arguments)]
     fn send_nft(
         &self,
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
         contract: String,
+        class_id: String,
         token_id: String,
         msg: Binary,
     ) -> Result<Response<C>, Self::Err>;
 
+    #[allow(clippy::too_many_arguments)]
     fn approve(
         &self,
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
         spender: String,
+        class_id: String,
         token_id: String,
         expires: Option<Expiration>,
     ) -> Result<Response<C>, Self::Err>;
@@ -64,6 +69,7 @@ where
         env: Env,
         info: MessageInfo,
         spender: String,
+        class_id: String,
         token_id: String,
     ) -> Result<Response<C>, Self::Err>;
 
@@ -89,6 +95,7 @@ where
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
+        class_id: String,
         token_id: String,
     ) -> Result<Response<C>, Self::Err>;
 }
@@ -104,12 +111,18 @@ where
 
     fn num_tokens(&self, deps: Deps) -> StdResult<NumTokensResponse>;
 
-    fn nft_info(&self, deps: Deps, token_id: String) -> StdResult<NftInfoResponse<T>>;
+    fn nft_info(
+        &self,
+        deps: Deps,
+        class_id: String,
+        token_id: String,
+    ) -> StdResult<NftInfoResponse<T>>;
 
     fn owner_of(
         &self,
         deps: Deps,
         env: Env,
+        class_id: String,
         token_id: String,
         include_expired: bool,
     ) -> StdResult<OwnerOfResponse>;
@@ -128,6 +141,7 @@ where
         &self,
         deps: Deps,
         env: Env,
+        class_id: String,
         token_id: String,
         spender: String,
         include_expired: bool,
@@ -137,6 +151,7 @@ where
         &self,
         deps: Deps,
         env: Env,
+        class_id: String,
         token_id: String,
         include_expired: bool,
     ) -> StdResult<ApprovalsResponse>;
@@ -145,14 +160,14 @@ where
         &self,
         deps: Deps,
         owner: String,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse>;
 
     fn all_tokens(
         &self,
         deps: Deps,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse>;
 
@@ -160,6 +175,7 @@ where
         &self,
         deps: Deps,
         env: Env,
+        class_id: String,
         token_id: String,
         include_expired: bool,
     ) -> StdResult<AllNftInfoResponse<T>>;
