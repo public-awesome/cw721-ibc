@@ -182,14 +182,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "cw721"
+name = "cw721-base-ibc"
 version = "0.13.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-storage-plus",
  "cw-utils",
+ "cw2",
+ "cw721-ibc",
  "schemars",
  "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -198,13 +202,9 @@ version = "0.13.2"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-storage-plus",
  "cw-utils",
- "cw2",
- "cw721",
  "schemars",
  "serde",
- "thiserror",
 ]
 
 [[package]]

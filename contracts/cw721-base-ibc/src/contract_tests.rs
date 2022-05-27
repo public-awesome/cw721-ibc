@@ -2,7 +2,7 @@
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
 use cosmwasm_std::{from_binary, to_binary, CosmosMsg, DepsMut, Empty, Response, WasmMsg};
 
-use cw721::{
+use cw721_ibc::{
     Approval, ApprovalResponse, ContractInfoResponse, Cw721Query, Cw721ReceiveMsg, Expiration,
     NftInfoResponse, OperatorsResponse, OwnerOfResponse,
 };
@@ -571,7 +571,7 @@ fn approving_all_revoking_all() {
     assert_eq!(
         res,
         OperatorsResponse {
-            operators: vec![cw721::Approval {
+            operators: vec![cw721_ibc::Approval {
                 spender: String::from("operator"),
                 expires: Expiration::Never {}
             }]
@@ -603,7 +603,7 @@ fn approving_all_revoking_all() {
     assert_eq!(
         res,
         OperatorsResponse {
-            operators: vec![cw721::Approval {
+            operators: vec![cw721_ibc::Approval {
                 spender: String::from("buddy"),
                 expires: buddy_expires,
             }]
@@ -622,7 +622,7 @@ fn approving_all_revoking_all() {
     assert_eq!(
         res,
         OperatorsResponse {
-            operators: vec![cw721::Approval {
+            operators: vec![cw721_ibc::Approval {
                 spender: String::from("operator"),
                 expires: Expiration::Never {}
             }]
@@ -650,7 +650,7 @@ fn approving_all_revoking_all() {
     assert_eq!(
         res,
         OperatorsResponse {
-            operators: vec![cw721::Approval {
+            operators: vec![cw721_ibc::Approval {
                 spender: String::from("buddy"),
                 expires: buddy_expires,
             }]
