@@ -4,7 +4,6 @@ use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 
 use cosmwasm_std::{Addr, BlockInfo, StdResult, Storage};
-
 use cw721_ibc::{ContractInfoResponse, CustomMsg, Cw721, Expiration};
 use cw_storage_plus::{Index, IndexList, IndexedMap, Item, Map, MultiIndex};
 
@@ -17,7 +16,7 @@ where
     pub token_count: Item<'a, u64>,
     /// Stored as (granter, operator) giving operator full control over granter's account
     pub operators: Map<'a, (&'a Addr, &'a Addr), Expiration>,
-    pub tokens: IndexedMap<'a, &'a str, TokenInfo<T>, TokenIndexes<'a, T>>,
+    pub tokens: IndexedMap<'a, (&'a str, &'a str), TokenInfo<T>, TokenIndexes<'a, T>>,
 
     pub(crate) _custom_response: PhantomData<C>,
 }
@@ -122,7 +121,7 @@ pub struct TokenIndexes<'a, T>
 where
     T: Serialize + DeserializeOwned + Clone,
 {
-    pub owner: MultiIndex<'a, Addr, TokenInfo<T>, Addr>,
+    pub owner: MultiIndex<'a, Addr, TokenInfo<T>, (String, String)>,
 }
 
 impl<'a, T> IndexList<TokenInfo<T>> for TokenIndexes<'a, T>

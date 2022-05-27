@@ -128,5 +128,5 @@ pub struct TokensResponse {
     /// Contains all token_ids in lexicographical ordering
     /// If there are more than `limit`, use `start_from` in future queries
     /// to achieve pagination.
-    pub tokens: Vec<String>,
+    pub tokens: Vec<(String, String)>,
 }

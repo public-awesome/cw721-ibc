@@ -2,7 +2,8 @@ use crate::{ExecuteMsg, QueryMsg};
 use cosmwasm_std::{to_binary, Addr, CosmosMsg, QuerierWrapper, StdResult, WasmMsg, WasmQuery};
 use cw721_ibc::{
     AllNftInfoResponse, Approval, ApprovalResponse, ApprovalsResponse, ContractInfoResponse,
-    NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokensResponse,
+    NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse, TokenParams,
+    TokensResponse,
 };
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -44,10 +45,12 @@ impl Cw721Contract {
     pub fn owner_of<T: Into<String>>(
         &self,
         querier: &QuerierWrapper,
+        class_id: T,
         token_id: T,
         include_expired: bool,
     ) -> StdResult<OwnerOfResponse> {
         let req = QueryMsg::OwnerOf {
+            class_id: class_id.into(),
             token_id: token_id.into(),
             include_expired: Some(include_expired),
         };
@@ -57,11 +60,13 @@ impl Cw721Contract {
     pub fn approval<T: Into<String>>(
         &self,
         querier: &QuerierWrapper,
+        class_id: T,
         token_id: T,
         spender: T,
         include_expired: Option<bool>,
     ) -> StdResult<ApprovalResponse> {
         let req = QueryMsg::Approval {
+            class_id: class_id.into(),
             token_id: token_id.into(),
             spender: spender.into(),
             include_expired,
@@ -73,10 +78,12 @@ impl Cw721Contract {
     pub fn approvals<T: Into<String>>(
         &self,
         querier: &QuerierWrapper,
+        class_id: T,
         token_id: T,
         include_expired: Option<bool>,
     ) -> StdResult<ApprovalsResponse> {
         let req = QueryMsg::Approvals {
+            class_id: class_id.into(),
             token_id: token_id.into(),
             include_expired,
         };
@@ -118,9 +125,11 @@ impl Cw721Contract {
     pub fn nft_info<T: Into<String>, U: DeserializeOwned>(
         &self,
         querier: &QuerierWrapper,
+        class_id: T,
         token_id: T,
     ) -> StdResult<NftInfoResponse<U>> {
         let req = QueryMsg::NftInfo {
+            class_id: class_id.into(),
             token_id: token_id.into(),
         };
         self.query(querier, req)
@@ -130,10 +139,12 @@ impl Cw721Contract {
     pub fn all_nft_info<T: Into<String>, U: DeserializeOwned>(
         &self,
         querier: &QuerierWrapper,
+        class_id: T,
         token_id: T,
         include_expired: bool,
     ) -> StdResult<AllNftInfoResponse<U>> {
         let req = QueryMsg::AllNftInfo {
+            class_id: class_id.into(),
             token_id: token_id.into(),
             include_expired: Some(include_expired),
         };
@@ -145,7 +156,7 @@ impl Cw721Contract {
         &self,
         querier: &QuerierWrapper,
         owner: T,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let req = QueryMsg::Tokens {
@@ -160,7 +171,7 @@ impl Cw721Contract {
     pub fn all_tokens(
         &self,
         querier: &QuerierWrapper,
-        start_after: Option<String>,
+        start_after: Option<TokenParams>,
         limit: Option<u32>,
     ) -> StdResult<TokensResponse> {
         let req = QueryMsg::AllTokens { start_after, limit };
