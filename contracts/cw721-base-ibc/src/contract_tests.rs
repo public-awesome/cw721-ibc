@@ -828,4 +828,3 @@ fn query_tokens_by_owner() {
         .unwrap();
     assert_eq!(&by_demeter[1..], &tokens.tokens[..]);
 }
- 
