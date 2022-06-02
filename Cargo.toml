@@ -5,6 +5,10 @@ members = ["packages/*", "contracts/*"]
 codegen-units = 1
 incremental = false
 
+[profile.release.package.cw721-base-ibc]
+codegen-units = 1
+incremental = false
+
 [profile.release]
 rpath = false
 lto = true
