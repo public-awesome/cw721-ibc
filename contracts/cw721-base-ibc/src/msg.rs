@@ -173,6 +173,14 @@ pub enum QueryMsg {
 
     // Return the minter
     Minter {},
+
+    HasClass {
+        class_id: String,
+    },
+
+    GetClass {
+        class_id: String,
+    },
 }
 
 /// Shows who can mint these tokens

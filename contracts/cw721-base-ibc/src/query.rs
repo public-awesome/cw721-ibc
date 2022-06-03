@@ -3,7 +3,6 @@ use serde::Serialize;
 use std::marker::PhantomData;
 
 use cosmwasm_std::{to_binary, Addr, Binary, BlockInfo, Deps, Env, Order, StdError, StdResult};
-
 use cw721_ibc::{
     AllNftInfoResponse, ApprovalResponse, ApprovalsResponse, ContractInfoResponse, CustomMsg,
     Cw721Query, Expiration, NftInfoResponse, NumTokensResponse, OperatorsResponse, OwnerOfResponse,
@@ -308,6 +307,7 @@ where
                 token_id,
                 include_expired.unwrap_or(false),
             )?),
+            _ => to_binary(&"Unsupported Message Format".to_string()),
         }
     }
 }
