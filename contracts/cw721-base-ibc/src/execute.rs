@@ -76,6 +76,7 @@ where
             ExecuteMsg::Burn { class_id, token_id } => {
                 self.burn(deps, env, info, class_id, token_id)
             }
+            _ => Err(ContractError::MsgFormatNotSupported {}),
         }
     }
 }

@@ -222,6 +222,30 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "save_class"
+      ],
+      "properties": {
+        "save_class": {
+          "type": "object",
+          "required": [
+            "class_id",
+            "class_uri"
+          ],
+          "properties": {
+            "class_id": {
+              "type": "string"
+            },
+            "class_uri": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

@@ -57,14 +57,25 @@ pub enum ExecuteMsg<T> {
         operator: String,
         expires: Option<Expiration>,
     },
+
     /// Remove previously granted ApproveAll permission
-    RevokeAll { operator: String },
+    RevokeAll {
+        operator: String,
+    },
 
     /// Mint a new NFT, can only be called by the contract minter
     Mint(MintMsg<T>),
 
     /// Burn an NFT the sender has access to
-    Burn { class_id: String, token_id: String },
+    Burn {
+        class_id: String,
+        token_id: String,
+    },
+
+    SaveClass {
+        class_id: String,
+        class_uri: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
