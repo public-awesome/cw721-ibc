@@ -308,6 +308,46 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "has_class"
+      ],
+      "properties": {
+        "has_class": {
+          "type": "object",
+          "required": [
+            "class_id"
+          ],
+          "properties": {
+            "class_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_class"
+      ],
+      "properties": {
+        "get_class": {
+          "type": "object",
+          "required": [
+            "class_id"
+          ],
+          "properties": {
+            "class_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
