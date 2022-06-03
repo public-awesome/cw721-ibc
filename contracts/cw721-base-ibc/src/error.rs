@@ -17,4 +17,7 @@ pub enum ContractError {
 
     #[error("Approval not found for: {spender}")]
     ApprovalNotFound { spender: String },
+
+    #[error("Message Format Not Supported")]
+    MsgFormatNotSupported {},
 }
