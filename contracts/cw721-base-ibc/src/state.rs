@@ -17,7 +17,6 @@ where
     /// Stored as (granter, operator) giving operator full control over granter's account
     pub operators: Map<'a, (&'a Addr, &'a Addr), Expiration>,
     pub tokens: IndexedMap<'a, (&'a str, &'a str), TokenInfo<T>, TokenIndexes<'a, T>>,
-    
 
     pub(crate) _custom_response: PhantomData<C>,
 }
